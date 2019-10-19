@@ -7,6 +7,8 @@ DEFAULT_CAMERA_CONFIG = {
     'distance': 4.0,
 }
 
+TARGET_VELOCITY=0.1
+
 
 class HalfCheetahEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self,
@@ -14,9 +16,12 @@ class HalfCheetahEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                  forward_reward_weight=1.0,
                  ctrl_cost_weight=0.1,
                  reset_noise_scale=0.1,
-                 exclude_current_positions_from_observation=True):
+                 exclude_current_positions_from_observation=True,
+                 target_velocity=0.1):
         utils.EzPickle.__init__(**locals())
 
+        self.target_velocity = target_velocity
+        
         self._forward_reward_weight = forward_reward_weight
 
         self._ctrl_cost_weight = ctrl_cost_weight
@@ -29,7 +34,7 @@ class HalfCheetahEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         mujoco_env.MujocoEnv.__init__(self, xml_file, 5)
 
     def control_cost(self, action):
-        control_cost = self._ctrl_cost_weight * np.sum(np.square(action))
+        control_cost = np.linalg.norm(action)
         return control_cost
 
     def step(self, action):
@@ -41,16 +46,22 @@ class HalfCheetahEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         ctrl_cost = self.control_cost(action)
 
-        forward_reward = self._forward_reward_weight * x_velocity
+        alpha = 1.0
+        beta = 0.05
 
+        alive_bonus = 0.0
+        reward = alive_bonus - alpha * np.abs(x_velocity - self.target_velocity) - beta * ctrl_cost
+        #print(np.abs(x_velocity - self.target_velocity))
+        #forward_reward = self._forward_reward_weight * (1. - np.tanh(10. * (np.abs(x_velocity - self.target_velocity)))) #np.square(x_velocity - TARGET_VELOCITY)
+        #print(forward_reward, np.abs(x_velocity))
         observation = self._get_obs()
-        reward = forward_reward - ctrl_cost
+        #reward = forward_reward - ctrl_cost
         done = False
         info = {
             'x_position': x_position_after,
             'x_velocity': x_velocity,
 
-            'reward_run': forward_reward,
+            #'reward_run': forward_reward,
             'reward_ctrl': -ctrl_cost
         }
 

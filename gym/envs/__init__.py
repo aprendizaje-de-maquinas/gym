@@ -256,7 +256,7 @@ register(
 register(
     id='HalfCheetah-v3',
     entry_point='gym.envs.mujoco.half_cheetah_v3:HalfCheetahEnv',
-    max_episode_steps=1000,
+    max_episode_steps=200,
     reward_threshold=4800.0,
 )
 

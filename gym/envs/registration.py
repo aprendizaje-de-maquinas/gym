@@ -36,7 +36,7 @@ class EnvSpec(object):
         id (str): The official environment ID
     """
 
-    def __init__(self, id, entry_point=None, reward_threshold=None, kwargs=None, nondeterministic=False, tags=None, max_episode_steps=None):
+    def __init__(self, id, entry_point=None, reward_threshold=None, kwargs=None, nondeterministic=False, tags=None, max_episode_steps=None, timestep_limit=None):
         self.id = id
         # Evaluation parameters
         self.reward_threshold = reward_threshold
